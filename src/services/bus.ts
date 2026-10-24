@@ -6,7 +6,7 @@ import {
   type RequestOptions,
 } from "./apiClient";
 import { API_CONFIG } from "./config";
-import type { BusStation, WsBusResponse } from "./types/bus";
+import type { BusArrival, BusStation, WsBusResponse } from "./types/bus";
 
 const HEADER_OK = "0";
 const HEADER_NO_RESULT = "4";
@@ -34,3 +34,9 @@ const busGet = async <T>(
 /** 정류소명으로 정류소 목록 검색 */
 export const getStationsByName = (stSrch: string, options?: RequestOptions) =>
   busGet<BusStation>("/bus/stations", { stSrch }, options);
+
+/** 정류소 고유번호(arsId 5자리)로 도착 예정 버스 목록 조회 */
+export const getStationArrivalsByArsId = (
+  arsId: string,
+  options?: RequestOptions,
+) => busGet<BusArrival>("/bus/arrivals", { arsId }, options);

@@ -44,7 +44,7 @@ function Page() {
 
   const handleRowPress = (_id: string) => {
     // TODO: 정류장/역 상세 화면으로 이동 (id 전달)
-    navigation.navigate("/about");
+    navigation.navigate("/detail");
   };
 
   return (

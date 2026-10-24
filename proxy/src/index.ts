@@ -31,6 +31,13 @@ const ROUTES: Record<string, RouteDef> = {
     params: [{ name: "stSrch", required: true }],
     cacheTtl: 60 * 60, // 정류소명은 거의 안 바뀜
   },
+  "/bus/arrivals": {
+    upstream: "http://ws.bus.go.kr/api/rest/stationinfo/getStationByUid",
+    auth: (env) => ({ serviceKey: env.BUS_API_KEY }),
+    fixed: { resultType: "json" },
+    params: [{ name: "arsId", required: true }],
+    cacheTtl: 10, // 실시간 도착정보는 10초 캐시
+  },
 };
 
 const CORS_HEADERS = {
