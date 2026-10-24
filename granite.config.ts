@@ -8,8 +8,8 @@ export default defineConfig({
     appsInToss({
       brand: {
         displayName: "서울 단골 정류장", // 화면에 노출될 앱의 한글 이름으로 바꿔주세요.
-        primaryColor: "#3182F6", // 화면에 노출될 앱의 기본 색상으로 바꿔주세요.
-        icon: "", // 화면에 노출될 앱의 아이콘 이미지 주소로 바꿔주세요.
+        primaryColor: "#033F6D", // 화면에 노출될 앱의 기본 색상으로 바꿔주세요.
+        icon: "https://ibb.co/RGSxbrWQ", // 화면에 노출될 앱의 아이콘 이미지 주소로 바꿔주세요.
       },
       permissions: [],
     }),

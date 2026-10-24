@@ -1,9 +1,15 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { getStationsByName } from "../services/bus";
+import { searchSubwayStations } from "../services/subway";
 import type { BusStation } from "../services/types/bus";
+import type { SubwayStation } from "../services/types/subway";
 import { useDebouncedValue } from "./useDebouncedValue";
 
 export type SearchType = "bus" | "subway";
+
+export type StationItem =
+  | { type: "bus"; data: BusStation }
+  | { type: "subway"; data: SubwayStation };
 
 type Options = {
   /** 디바운스 지연(ms) */
@@ -13,13 +19,15 @@ type Options = {
 };
 
 /** 미정차 정류소(arsId "0")는 탑승할 수 없으므로 제외 */
-const selectStoppable = (list: BusStation[]) => list.filter((s) => s.arsId !== "0");
+const selectStoppableBus = (list: BusStation[]): StationItem[] =>
+  list
+    .filter((s) => s.arsId !== "0")
+    .map((s) => ({ type: "bus" as const, data: s }));
 
 /**
- * 검색어를 디바운스해서 정류소를 검색한다.
- * - 같은 검색어는 react-query 캐시로 재요청하지 않음
- * - 새 검색어 입력 시 이전 요청은 signal로 취소
- * - 로딩 중에는 이전 결과를 유지해서 리스트가 깜빡이지 않음
+ * 검색어를 디바운스해서 버스 정류소(API) 또는 지하철역(로컬 JSON)을 검색한다.
+ * - 버스: 서울시 버스 API 호출
+ * - 지하철: subwayStations.json 파일 기반 로컬 검색
  */
 export const useStationSearch = (
   query: string,
@@ -29,15 +37,22 @@ export const useStationSearch = (
   const trimmed = query.trim();
   const keyword = useDebouncedValue(trimmed, delay);
 
-  // TODO: 지하철 검색 API 연결 시 type별 queryFn 분기
-  const isSupported = type === "bus";
-  const enabled = isSupported && keyword.length >= minLength;
+  // 버스와 지하철 모두 검색 지원
+  const isSupported = true;
+  const enabled = keyword.length >= minLength;
 
-  const { data, isFetching, isError, refetch } = useQuery({
+  const { data, isFetching, isError, refetch } = useQuery<StationItem[]>({
     queryKey: ["stations", type, keyword],
-    queryFn: ({ signal }) => getStationsByName(keyword, { signal }),
+    queryFn: async ({ signal }) => {
+      if (type === "bus") {
+        const busList = await getStationsByName(keyword, { signal });
+        return selectStoppableBus(busList);
+      } else {
+        const subwayList = searchSubwayStations(keyword);
+        return subwayList.map((s) => ({ type: "subway" as const, data: s }));
+      }
+    },
     enabled,
-    select: selectStoppable,
     staleTime: 5 * 60 * 1000,
     placeholderData: keepPreviousData,
   });
@@ -46,6 +61,7 @@ export const useStationSearch = (
     /** 검색 모드 여부 (입력값이 있으면 true) */
     isActive: trimmed.length > 0,
     isSupported,
+    searchType: type,
     /** 실제 요청에 쓰인(디바운스된) 검색어 */
     keyword,
     /** minLength 미만이라 아직 요청하지 않은 상태 */

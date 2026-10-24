@@ -1,5 +1,4 @@
 import {
-  Asset,
   Top,
   SegmentedControl,
   SearchField,
@@ -14,6 +13,7 @@ import React, { useState } from "react";
 import { ScrollView } from "react-native";
 import { FavoriteButton } from "../components/FavoriteButton";
 import { StationSearchResults } from "../components/StationSearchResults";
+import { TransitIcon } from "../components/TransitIcon";
 import { useStationSearch, type SearchType } from "../hooks/useStationSearch";
 
 export const Route = createRoute("/", {
@@ -88,77 +88,63 @@ function Page() {
           isError={search.isError}
           isFavorite={(id) => favorites.has(id)}
           onToggleFavorite={toggleFavorite}
-          onPressStation={(station) => handleRowPress(`bus-${station.stId}`)}
+          onPressStation={(item) =>
+            handleRowPress(
+              item.type === "bus"
+                ? `bus-${item.data.stId}`
+                : `subway-${item.data.statnId}`,
+            )
+          }
         />
       ) : (
         <>
-      <ListHeader
-        title={
-          <ListHeader.TitleParagraph color={adaptive.grey800}>
-            즐겨찾기
-          </ListHeader.TitleParagraph>
-        }
-      />
-      <ListRow
-        onPress={() => handleRowPress("subway-2-gangnam")}
-        left={
-          <>
-            <Asset.Image
-              frameShape={{ height: 54 }}
-              backgroundColor={adaptive.greyOpacity100}
-              source={{
-                uri: "https://static.toss.im/2d-icons/emoji/png/4x/uE0062.png",
-              }}
-            />
-          </>
-        }
-        contents={
-          <ListRow.Texts
-            type="3RowTypeD"
-            top="2호선"
-            topProps={{ color: adaptive.grey700 }}
-            middle="강남역"
-            middleProps={{ color: adaptive.grey800, fontWeight: "bold" }}
-            bottom="역삼역 방면"
-            bottomProps={{ color: adaptive.grey600 }}
+          <ListHeader
+            title={
+              <ListHeader.TitleParagraph color={adaptive.grey800}>
+                즐겨찾기
+              </ListHeader.TitleParagraph>
+            }
           />
-        }
-        right={
-          <FavoriteButton
-            active={favorites.has("subway-2-gangnam")}
-            onToggle={() => toggleFavorite("subway-2-gangnam")}
+          <ListRow
+            onPress={() => handleRowPress("subway-2-gangnam")}
+            left={<TransitIcon type="subway" subwayNm="2호선" />}
+            contents={
+              <ListRow.Texts
+                type="3RowTypeD"
+                top="2호선"
+                topProps={{ color: adaptive.grey700 }}
+                middle="강남역"
+                middleProps={{ color: adaptive.grey800, fontWeight: "bold" }}
+                bottom="역삼역 방면"
+                bottomProps={{ color: adaptive.grey600 }}
+              />
+            }
+            right={
+              <FavoriteButton
+                active={favorites.has("subway-2-gangnam")}
+                onToggle={() => toggleFavorite("subway-2-gangnam")}
+              />
+            }
           />
-        }
-      />
-      <ListRow
-        onPress={() => handleRowPress("bus-22518")}
-        left={
-          <>
-            <Asset.Image
-              frameShape={{ height: 54 }}
-              backgroundColor={adaptive.greyOpacity100}
-              source={{
-                uri: "https://static.toss.im/2d-icons/emoji/png/4x/u1F68F.png",
-              }}
-            />
-          </>
-        }
-        contents={
-          <ListRow.Texts
-            type="2RowTypeE"
-            top="22518"
-            topProps={{ color: adaptive.grey700 }}
-            bottom="서래마을.서래글로벌빌리지센터"
-            bottomProps={{ color: adaptive.grey800, fontWeight: "bold" }}
+          <ListRow
+            onPress={() => handleRowPress("bus-22518")}
+            left={<TransitIcon type="bus" />}
+            contents={
+              <ListRow.Texts
+                type="2RowTypeE"
+                top="22518"
+                topProps={{ color: adaptive.grey700 }}
+                bottom="서래마을.서래글로벌빌리지센터"
+                bottomProps={{ color: adaptive.grey800, fontWeight: "bold" }}
+              />
+            }
+            right={
+              <FavoriteButton
+                active={favorites.has("bus-22518")}
+                onToggle={() => toggleFavorite("bus-22518")}
+              />
+            }
           />
-        }
-        right={
-          <FavoriteButton
-            active={favorites.has("bus-22518")}
-            onToggle={() => toggleFavorite("bus-22518")}
-          />
-        }
-      />
         </>
       )}
     </ScrollView>

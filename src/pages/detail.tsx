@@ -7,7 +7,7 @@ export const Route = createRoute("/about", {
 });
 
 function Page() {
-  const navigation = Route.useNavigation();
+  Route.useNavigation();
 
   return (
     <View style={styles.container}>

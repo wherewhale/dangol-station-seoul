@@ -1,25 +1,25 @@
-import { Asset, ListHeader, ListRow, Loader, Txt } from "@toss/tds-react-native";
+import { ListHeader, ListRow, Loader, Txt } from "@toss/tds-react-native";
 import { useAdaptive } from "@toss/tds-react-native/private";
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import type { BusStation } from "../services/types/bus";
+import type { StationItem } from "../hooks/useStationSearch";
 import { FavoriteButton } from "./FavoriteButton";
-
-const BUS_ICON = "https://static.toss.im/2d-icons/emoji/png/4x/u1F68F.png";
+import { TransitIcon } from "./TransitIcon";
 
 type Props = {
   keyword: string;
-  stations: BusStation[];
+  stations: StationItem[];
   isSupported: boolean;
   isTooShort: boolean;
   isSearching: boolean;
   isError: boolean;
   isFavorite: (id: string) => boolean;
   onToggleFavorite: (id: string) => void;
-  onPressStation: (station: BusStation) => void;
+  onPressStation: (item: StationItem) => void;
 };
 
-export const toBusFavoriteId = (station: BusStation) => `bus-${station.stId}`;
+export const getFavoriteId = (item: StationItem) =>
+  item.type === "bus" ? `bus-${item.data.stId}` : `subway-${item.data.statnId}`;
 
 export const StationSearchResults = ({
   keyword,
@@ -43,7 +43,7 @@ export const StationSearchResults = ({
   );
 
   const renderBody = () => {
-    if (!isSupported) return message("지하철 검색은 준비 중이에요");
+    if (!isSupported) return message("검색이 지원되지 않는 항목이에요");
     if (isTooShort) return message("두 글자 이상 입력해주세요");
     if (isError) return message("검색에 실패했어요. 잠시 후 다시 시도해주세요");
     // 이전 결과가 있으면 로딩 중에도 리스트 유지 (깜빡임 방지)
@@ -54,32 +54,59 @@ export const StationSearchResults = ({
         </View>
       );
     }
-    if (stations.length === 0) return message(`'${keyword}' 검색 결과가 없어요`);
+    if (stations.length === 0)
+      return message(`'${keyword}' 검색 결과가 없어요`);
 
-    return stations.map((station) => {
-      const id = toBusFavoriteId(station);
+    return stations.map((item) => {
+      const id = getFavoriteId(item);
+
+      if (item.type === "bus") {
+        const station = item.data;
+        return (
+          <ListRow
+            key={`bus-${station.stId}`}
+            onPress={() => onPressStation(item)}
+            left={<TransitIcon type="bus" />}
+            contents={
+              <ListRow.Texts
+                type="2RowTypeE"
+                top={station.arsId}
+                topProps={{ color: adaptive.grey700 }}
+                bottom={station.stNm}
+                bottomProps={{ color: adaptive.grey800, fontWeight: "bold" }}
+              />
+            }
+            right={
+              <FavoriteButton
+                active={isFavorite(id)}
+                onToggle={() => onToggleFavorite(id)}
+              />
+            }
+          />
+        );
+      }
+
+      // 지하철 결과
+      const subway = item.data;
       return (
         <ListRow
-          key={station.stId}
-          onPress={() => onPressStation(station)}
-          left={
-            <Asset.Image
-              frameShape={{ height: 54 }}
-              backgroundColor={adaptive.greyOpacity100}
-              source={{ uri: BUS_ICON }}
-            />
-          }
+          key={`subway-${subway.statnId}`}
+          onPress={() => onPressStation(item)}
+          left={<TransitIcon type="subway" subwayNm={subway.subwayNm} />}
           contents={
             <ListRow.Texts
               type="2RowTypeE"
-              top={station.arsId}
+              top={subway.subwayNm}
               topProps={{ color: adaptive.grey700 }}
-              bottom={station.stNm}
+              bottom={`${subway.statnNm}역`}
               bottomProps={{ color: adaptive.grey800, fontWeight: "bold" }}
             />
           }
           right={
-            <FavoriteButton active={isFavorite(id)} onToggle={() => onToggleFavorite(id)} />
+            <FavoriteButton
+              active={isFavorite(id)}
+              onToggle={() => onToggleFavorite(id)}
+            />
           }
         />
       );
