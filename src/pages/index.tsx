@@ -14,7 +14,11 @@ import { ScrollView } from "react-native";
 import { FavoriteButton } from "../components/FavoriteButton";
 import { StationSearchResults } from "../components/StationSearchResults";
 import { TransitIcon } from "../components/TransitIcon";
-import { useStationSearch, type SearchType } from "../hooks/useStationSearch";
+import {
+  useStationSearch,
+  type SearchType,
+  type StationItem,
+} from "../hooks/useStationSearch";
 
 export const Route = createRoute("/", {
   component: Page,
@@ -42,9 +46,21 @@ function Page() {
     });
   };
 
-  const handleRowPress = (_id: string) => {
-    // TODO: 정류장/역 상세 화면으로 이동 (id 전달)
-    navigation.navigate("/detail");
+  const handleStationPress = (item: StationItem) => {
+    if (item.type === "bus") {
+      navigation.navigate("/detail", {
+        type: "bus",
+        arsId: item.data.arsId,
+        stNm: item.data.stNm,
+      });
+    } else {
+      navigation.navigate("/detail", {
+        type: "subway",
+        subwayId: item.data.subwayId,
+        subwayNm: item.data.subwayNm,
+        statnNm: item.data.statnNm,
+      });
+    }
   };
 
   return (
@@ -88,13 +104,7 @@ function Page() {
           isError={search.isError}
           isFavorite={(id) => favorites.has(id)}
           onToggleFavorite={toggleFavorite}
-          onPressStation={(item) =>
-            handleRowPress(
-              item.type === "bus"
-                ? `bus-${item.data.stId}`
-                : `subway-${item.data.statnId}`,
-            )
-          }
+          onPressStation={handleStationPress}
         />
       ) : (
         <>
@@ -106,7 +116,14 @@ function Page() {
             }
           />
           <ListRow
-            onPress={() => handleRowPress("subway-2-gangnam")}
+            onPress={() =>
+              navigation.navigate("/detail", {
+                type: "subway",
+                subwayId: "1002",
+                subwayNm: "2호선",
+                statnNm: "강남",
+              })
+            }
             left={<TransitIcon type="subway" subwayNm="2호선" />}
             contents={
               <ListRow.Texts
@@ -127,7 +144,12 @@ function Page() {
             }
           />
           <ListRow
-            onPress={() => handleRowPress("bus-22518")}
+            onPress={() =>
+              navigation.navigate("/detail", {
+                arsId: "22518",
+                stNm: "서래마을.서래글로벌빌리지센터",
+              })
+            }
             left={<TransitIcon type="bus" />}
             contents={
               <ListRow.Texts
