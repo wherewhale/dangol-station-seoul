@@ -1,9 +1,7 @@
 import { Asset } from "@toss/tds-react-native";
 import React from "react";
 import { GestureResponderEvent, Pressable } from "react-native";
-
-const ICON_OFF = "https://static.toss.im/2d-icons/emoji/png/4x/uE0062.png";
-const ICON_ON = "https://static.toss.im/2d-icons/emoji/png/4x/u2B50.png";
+import { FAVORITE_ICON_OFF, FAVORITE_ICON_ON } from "../const/icons";
 
 type Props = {
   active: boolean;
@@ -31,7 +29,7 @@ export const FavoriteButton = ({ active, onToggle, size = 24 }: Props) => {
     >
       <Asset.Image
         frameShape={{ width: size, height: size }}
-        source={{ uri: active ? ICON_ON : ICON_OFF }}
+        source={{ uri: active ? FAVORITE_ICON_ON : FAVORITE_ICON_OFF }}
       />
     </Pressable>
   );

@@ -1,10 +1,9 @@
 import { Asset } from "@toss/tds-react-native";
 import React from "react";
 import type { StyleProp, ViewStyle } from "react-native";
-import { getSubwayIconUrl } from "../services/subway";
+import { BUS_ICON, getSubwayIconUrl } from "../const/icons";
 
-export const BUS_ICON =
-  "https://static.toss.im/2d-icons/emoji/png/4x/u1F68F.png";
+export { BUS_ICON };
 
 export type TransitIconProps = (
   | {

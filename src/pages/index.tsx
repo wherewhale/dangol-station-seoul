@@ -5,15 +5,21 @@ import {
   Border,
   ListHeader,
   ListRow,
+  Txt,
 } from "@toss/tds-react-native";
 
 import { useAdaptive } from "@toss/tds-react-native/private";
 import { createRoute } from "@granite-js/react-native";
 import React, { useState } from "react";
-import { ScrollView } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { BottomBannerAd } from "../components/BottomBannerAd";
 import { FavoriteButton } from "../components/FavoriteButton";
 import { StationSearchResults } from "../components/StationSearchResults";
 import { TransitIcon } from "../components/TransitIcon";
+import {
+  useFavorites,
+  stationItemToFavorite,
+} from "../hooks/useFavorites";
 import {
   useStationSearch,
   type SearchType,
@@ -30,21 +36,10 @@ function Page() {
 
   const [searchType, setSearchType] = useState<SearchType>("bus");
   const [query, setQuery] = useState("");
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const { favorites, isFavorite, toggleFavorite, removeFavorite } =
+    useFavorites();
 
   const search = useStationSearch(query, searchType);
-
-  const toggleFavorite = (id: string) => {
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
 
   const handleStationPress = (item: StationItem) => {
     if (item.type === "bus") {
@@ -64,7 +59,8 @@ function Page() {
   };
 
   return (
-    <ScrollView>
+    <View style={styles.container}>
+      <ScrollView style={styles.scroll}>
       <Top
         title={
           <Top.TitleParagraph color={adaptive.grey900}>
@@ -102,8 +98,10 @@ function Page() {
           isTooShort={search.isTooShort}
           isSearching={search.isSearching}
           isError={search.isError}
-          isFavorite={(id) => favorites.has(id)}
-          onToggleFavorite={toggleFavorite}
+          isFavorite={isFavorite}
+          onToggleFavorite={(item) =>
+            toggleFavorite(stationItemToFavorite(item))
+          }
           onPressStation={handleStationPress}
         />
       ) : (
@@ -115,60 +113,95 @@ function Page() {
               </ListHeader.TitleParagraph>
             }
           />
-          <ListRow
-            onPress={() =>
-              navigation.navigate("/detail", {
-                type: "subway",
-                subwayId: "1002",
-                subwayNm: "2호선",
-                statnNm: "강남",
-              })
-            }
-            left={<TransitIcon type="subway" subwayNm="2호선" />}
-            contents={
-              <ListRow.Texts
-                type="3RowTypeD"
-                top="2호선"
-                topProps={{ color: adaptive.grey700 }}
-                middle="강남역"
-                middleProps={{ color: adaptive.grey800, fontWeight: "bold" }}
-                bottom="역삼역 방면"
-                bottomProps={{ color: adaptive.grey600 }}
-              />
-            }
-            right={
-              <FavoriteButton
-                active={favorites.has("subway-2-gangnam")}
-                onToggle={() => toggleFavorite("subway-2-gangnam")}
-              />
-            }
-          />
-          <ListRow
-            onPress={() =>
-              navigation.navigate("/detail", {
-                arsId: "22518",
-                stNm: "서래마을.서래글로벌빌리지센터",
-              })
-            }
-            left={<TransitIcon type="bus" />}
-            contents={
-              <ListRow.Texts
-                type="2RowTypeE"
-                top="22518"
-                topProps={{ color: adaptive.grey700 }}
-                bottom="서래마을.서래글로벌빌리지센터"
-                bottomProps={{ color: adaptive.grey800, fontWeight: "bold" }}
-              />
-            }
-            right={
-              <FavoriteButton
-                active={favorites.has("bus-22518")}
-                onToggle={() => toggleFavorite("bus-22518")}
-              />
-            }
-          />
+          {favorites.length === 0 ? (
+            <View style={{ paddingVertical: 48, alignItems: "center" }}>
+              <Txt typography="t6" color={adaptive.grey600}>
+                자주 찾는 정류소나 지하철역을 즐겨찾기 해보세요
+              </Txt>
+            </View>
+          ) : (
+            favorites.map((fav) => {
+              if (fav.type === "bus") {
+                return (
+                  <ListRow
+                    key={fav.id}
+                    onPress={() =>
+                      navigation.navigate("/detail", {
+                        type: "bus",
+                        arsId: fav.arsId,
+                        stNm: fav.stNm,
+                      })
+                    }
+                    left={<TransitIcon type="bus" />}
+                    contents={
+                      <ListRow.Texts
+                        type="2RowTypeE"
+                        top={fav.arsId}
+                        topProps={{ color: adaptive.grey700 }}
+                        bottom={fav.stNm}
+                        bottomProps={{
+                          color: adaptive.grey800,
+                          fontWeight: "bold",
+                        }}
+                      />
+                    }
+                    right={
+                      <FavoriteButton
+                        active={true}
+                        onToggle={() => removeFavorite(fav.id)}
+                      />
+                    }
+                  />
+                );
+              }
+
+              return (
+                <ListRow
+                  key={fav.id}
+                  onPress={() =>
+                    navigation.navigate("/detail", {
+                      type: "subway",
+                      subwayId: fav.subwayId,
+                      subwayNm: fav.subwayNm,
+                      statnNm: fav.statnNm,
+                    })
+                  }
+                  left={<TransitIcon type="subway" subwayNm={fav.subwayNm} />}
+                  contents={
+                    <ListRow.Texts
+                      type="2RowTypeE"
+                      top={fav.subwayNm}
+                      topProps={{ color: adaptive.grey700 }}
+                      bottom={`${fav.statnNm}역`}
+                      bottomProps={{
+                        color: adaptive.grey800,
+                        fontWeight: "bold",
+                      }}
+                    />
+                  }
+                  right={
+                    <FavoriteButton
+                      active={true}
+                      onToggle={() => removeFavorite(fav.id)}
+                    />
+                  }
+                />
+              );
+            })
+          )}
         </>
       )}
-    </ScrollView>
+      </ScrollView>
+      <BottomBannerAd />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
+});

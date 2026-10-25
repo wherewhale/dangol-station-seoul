@@ -2,6 +2,7 @@ import { ListHeader, ListRow, Loader, Txt } from "@toss/tds-react-native";
 import { useAdaptive } from "@toss/tds-react-native/private";
 import React from "react";
 import { StyleSheet, View } from "react-native";
+import { getFavoriteId } from "../hooks/useFavorites";
 import type { StationItem } from "../hooks/useStationSearch";
 import { FavoriteButton } from "./FavoriteButton";
 import { TransitIcon } from "./TransitIcon";
@@ -14,12 +15,11 @@ type Props = {
   isSearching: boolean;
   isError: boolean;
   isFavorite: (id: string) => boolean;
-  onToggleFavorite: (id: string) => void;
+  onToggleFavorite: (item: StationItem) => void;
   onPressStation: (item: StationItem) => void;
 };
 
-export const getFavoriteId = (item: StationItem) =>
-  item.type === "bus" ? `bus-${item.data.stId}` : `subway-${item.data.statnId}`;
+export { getFavoriteId };
 
 export const StationSearchResults = ({
   keyword,
@@ -79,7 +79,7 @@ export const StationSearchResults = ({
             right={
               <FavoriteButton
                 active={isFavorite(id)}
-                onToggle={() => onToggleFavorite(id)}
+                onToggle={() => onToggleFavorite(item)}
               />
             }
           />
@@ -105,7 +105,7 @@ export const StationSearchResults = ({
           right={
             <FavoriteButton
               active={isFavorite(id)}
-              onToggle={() => onToggleFavorite(id)}
+              onToggle={() => onToggleFavorite(item)}
             />
           }
         />

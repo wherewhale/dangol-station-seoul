@@ -20,3 +20,4 @@ yarn-error.log
 src/env.ts
 proxy/.dev.vars
 proxy/.wrangler
+secrets
