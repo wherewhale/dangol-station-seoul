@@ -73,7 +73,11 @@ export const SubwayDetailView = ({
   const renderTrainRow = (train: SubwayArrival, keySuffix: string) => {
     const destination = train.trainLineNm || `${train.bstatnNm || ""}행`;
     const bottomContent = getSubwayBadgeAndLocation(train);
-    const { timeText, positionText } = formatSubwayArrival(train, elapsedSec);
+    const { timeText, positionText } = formatSubwayArrival(
+      train,
+      elapsedSec,
+      subwayNm,
+    );
 
     return (
       <ListRow
